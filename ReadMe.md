@@ -1,5 +1,8 @@
 # After Effects Cmake Example
 
+90% of the credit goes to [Wunkolo](https://github.com/Wunkolo) who wrote most of this CmakeLists.txt. I've adapted it for CI use and 
+added some instructions for using it from the command line as well as making it apply to the `Skeleton` example from the AfterEffectsSDK. 
+
 If you move this CmakeLists.txt into the Skeleton example in the AfterEffectsSDK you can run either of the following for 
 cross platform builds.
 
