@@ -94,18 +94,47 @@ if(CMAKE_GENERATOR STREQUAL "Xcode")
 endif()
 
 # For Visual Studio project generation
-if(MSVC)
-	  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    set_target_properties(Skeleton PROPERTIES
-        # Add Visual Studio-specific settings here
-    )
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	add_definitions(
+		-D_CRT_SECURE_NO_WARNINGS
+	)
 
+	set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".aex")
 	get_filename_component(
 		AFX_REZ
 		../../Resources/PiPLtool.exe
 		ABSOLUTE
 		CACHE
 	)
-endif()
 
+	# Adobe is disgusting so we have to compile a resource format from the 90's into our project
+	add_custom_command(
+			OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rr
+			COMMAND
+			cl 
+			   /I \"../${AE_SDK_PATH}/Headers\" 
+			   /I \"../${AE_SDK_PATH}/Headers/SP\" 
+			   /I \"../${AE_SDK_PATH}/Util\" 
+			   /I \"../${AE_SDK_PATH}/Resources\" 
+			   /EP \"${CMAKE_CURRENT_SOURCE_DIR}/SkeletonPiPL.r\" > ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rr
+	)
+
+	add_custom_command(
+		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rr
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rrc
+		COMMAND ${AFX_REZ} ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rr ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rrc
+	)
+
+	add_custom_command(
+		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rrc
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc
+		COMMAND cl /D "MSWindows" /EP ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rrc > ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc
+	)
+
+	target_sources(
+		${PROJECT_NAME} PRIVATE
+		${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc
+	)
+
+endif()
 
